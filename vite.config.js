@@ -1,5 +1,5 @@
 export default {
-    base: '/WebPortfolio/',
+    base: '/',
     root: '.',
     publicDir: 'public',
     server:

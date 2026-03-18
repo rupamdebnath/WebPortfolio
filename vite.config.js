@@ -1,6 +1,7 @@
 export default {
-    root: 'src/',
-    publicDir: '../public/',
+    base: '/WebPortfolio/',
+    root: '.',
+    publicDir: 'public',
     server:
     {
         host: true,
@@ -8,7 +9,7 @@ export default {
     },
     build:
     {
-        outDir: '../dist',
+        outDir: 'dist',
         emptyOutDir: true,
         sourcemap: true 
     },

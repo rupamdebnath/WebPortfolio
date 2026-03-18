@@ -35,13 +35,13 @@ export default class ButtonHandler {
             backgroundOpacity: 0.8,
         });
 
-        // 🎯 Set position from constructor
+        // Set position from constructor
         this.container.position.copy(this.position);
         this.container.rotation.copy(this.rotation);
 
         this.scene.add(this.container);
 
-        // 🔘 Button
+        // Button
         this.button = new ThreeMeshUI.Block({
             width: 1,
             height: 0.3,
@@ -50,10 +50,10 @@ export default class ButtonHandler {
             backgroundColor: new THREE.Color(0x6666ff)
         });
 
-        // 📝 Text
+        // Text
         this.text = new ThreeMeshUI.Text({
             content: "Click Me",
-            fontSize: 0.1
+            fontSize: 0.15
         });
 
         this.button.add(this.text);

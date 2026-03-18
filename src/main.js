@@ -4,7 +4,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Sky } from 'three/examples/jsm/Addons.js';
 import ButtonHandler from './ButtonHandler.js';
 import PlayerController from './PlayerController.js';
+import House from './House.js';
 import ThreeMeshUI from 'three-mesh-ui';
+import TextHandler from './TextHandler.js';
 
 const scene = new THREE.Scene();
 const gui = new GUI();
@@ -21,6 +23,37 @@ scene.add(sky);
 
 //Canvas
 const canvas = document.querySelector('canvas.webgl');
+
+//Screen-space controls helper (always visible)
+const controlsHelper = document.createElement('div');
+controlsHelper.className = 'controls-helper';
+controlsHelper.innerHTML = `
+    <h3>Controls</h3>
+    <p>Use W, A, S, D to control the fox.</p>
+    <p>Hold Shift to sprint.</p>
+    <p>Click the blue buttons with the mouse to interact.</p>
+`;
+document.body.appendChild(controlsHelper);
+
+const contactOverlay = document.createElement('div');
+contactOverlay.className = 'contact-overlay';
+contactOverlay.innerHTML = `
+    <div class="contact-overlay-card" role="dialog" aria-modal="true" aria-label="Contact links">
+        <button class="contact-overlay-close" type="button" aria-label="Close contact overlay">Close</button>
+        <h3>Contact</h3>
+        <a href="https://www.linkedin.com/in/devrupam" target="_blank" rel="noopener noreferrer">Open LinkedIn Profile</a>
+    </div>
+`;
+document.body.appendChild(contactOverlay);
+
+const closeContactOverlayButton = contactOverlay.querySelector('.contact-overlay-close');
+const closeContactOverlay = () => {
+    contactOverlay.classList.remove('is-visible');
+};
+
+if (closeContactOverlayButton) {
+    closeContactOverlayButton.addEventListener('click', closeContactOverlay);
+}
 
 //Texture Loader
 const textureLoader = new THREE.TextureLoader();
@@ -66,148 +99,15 @@ const floor = new THREE.Mesh(
 scene.add(floor);
 floor.rotation.x = - Math.PI * 0.5; 
 
-//House Container
-const house = new THREE.Group();
-scene.add(house);
-
-//wall Texture
-const wallColorTexture = textureLoader.load('./textures/wall/castle_brick_broken_06_1k/castle_brick_broken_06_diff_1k.jpg');
-const wallARMTexture = textureLoader.load('./textures/wall/castle_brick_broken_06_1k/castle_brick_broken_06_arm_1k.jpg');
-const wallNormalTexture = textureLoader.load('./textures/wall/castle_brick_broken_06_1k/castle_brick_broken_06_nor_gl_1k.jpg');
-wallColorTexture.colorSpace = THREE.SRGBColorSpace;
-
-//Walls
-const walls = new THREE.Mesh(
-    new THREE.BoxGeometry(4, 2.5, 4),
-    new THREE.MeshStandardMaterial({ 
-        map: wallColorTexture,
-        aoMap: wallARMTexture,
-        roughnessMap: wallARMTexture,
-        metalnessMap: wallARMTexture,
-        normalMap: wallNormalTexture
-    })
-);
-walls.position.y = 2.5 / 2;
-house.add(walls);
-
-//Roof Texture
-const roofColorTexture = textureLoader.load('./textures/roof/roof_slates_02_1k/roof_slates_02_diff_1k.jpg');
-const roofARMTexture = textureLoader.load('./textures/roof/roof_slates_02_1k/roof_slates_02_arm_1k.jpg');
-const roofNormalTexture = textureLoader.load('./textures/roof/roof_slates_02_1k/roof_slates_02_nor_gl_1k.jpg');
-roofColorTexture.colorSpace = THREE.SRGBColorSpace;
-
-roofColorTexture.repeat.set(3, 1);
-roofARMTexture.repeat.set(3, 1);
-roofNormalTexture.repeat.set(3, 1);
-roofColorTexture.wrapS = THREE.RepeatWrapping;
-roofARMTexture.wrapS = THREE.RepeatWrapping;
-roofNormalTexture.wrapS = THREE.RepeatWrapping;
-//Roof
-const roof = new THREE.Mesh(
-    new THREE.ConeGeometry(3.5, 1, 4),
-    new THREE.MeshStandardMaterial({ 
-        map: roofColorTexture,
-        aoMap: roofARMTexture,
-        roughnessMap: roofARMTexture,
-        metalnessMap: roofARMTexture,
-        normalMap: roofNormalTexture
-    })
-);
-roof.position.y = 2.5 + 0.5;
-roof.rotation.y = Math.PI / 4;
-house.add(roof);
-
-//Door texture
-const doorAlphaTexture = textureLoader.load('./textures/door/alpha.jpg');
-const doorColorTexture = textureLoader.load('./textures/door/color.jpg');
-const doorAOTexture = textureLoader.load('./textures/door/ambientOcclusion.jpg');
-const doorRoughnessTexture = textureLoader.load('./textures/door/roughness.jpg');
-const doorMetalnessTexture = textureLoader.load('./textures/door/metalness.jpg');
-const doorNormalTexture = textureLoader.load('./textures/door/normal.jpg');
-const doorHeightTexture = textureLoader.load('./textures/door/height.jpg');
-doorColorTexture.colorSpace = THREE.SRGBColorSpace;
-
-//Door
-const door = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.2, 2.2),
-    new THREE.MeshStandardMaterial({ 
-        alphaMap: doorAlphaTexture,
-        transparent: true,
-        map: doorColorTexture,
-        aoMap: doorAOTexture,
-        roughnessMap: doorRoughnessTexture,
-        metalnessMap: doorMetalnessTexture,
-        displacementMap: doorHeightTexture,
-        normalMap: doorNormalTexture
-    })
-);
-door.position.z = 2 + 0.01;
-door.position.y = 1;
-house.add(door);
-
-//Bush Texture
-const bushColorTexture = textureLoader.load('./textures/bush/leaves_forest_ground_1k/leaves_forest_ground_diff_1k.jpg');
-const bushARMTexture = textureLoader.load('./textures/bush/leaves_forest_ground_1k/leaves_forest_ground_arm_1k.jpg');
-const bushNormalTexture = textureLoader.load('./textures/bush/leaves_forest_ground_1k/leaves_forest_ground_nor_gl_1k.jpg');
-bushColorTexture.colorSpace = THREE.SRGBColorSpace;
-
-bushColorTexture.repeat.set(2, 1);
-bushARMTexture.repeat.set(2, 1);
-bushNormalTexture.repeat.set(2, 1);
-bushColorTexture.wrapS = THREE.RepeatWrapping;
-bushARMTexture.wrapS = THREE.RepeatWrapping;
-bushNormalTexture.wrapS = THREE.RepeatWrapping;
-
-//Bushes
-const bushGeometry = new THREE.SphereGeometry(1, 16, 16);
-const bushMaterial = new THREE.MeshStandardMaterial({
-    color: '#ccffcc',
-    map: bushColorTexture,
-    aoMap: bushARMTexture,
-    roughnessMap: bushARMTexture,
-    metalnessMap: bushARMTexture,
-    normalMap: bushNormalTexture
-});
-
-const bush1 = new THREE.Mesh(bushGeometry, bushMaterial);
-bush1.position.set(1.8, 0.2, 2.2);
-bush1.scale.setScalar(0.5);
-bush1.rotation.x = -0.75;
-house.add(bush1);
-
-const bush2 = new THREE.Mesh(bushGeometry, bushMaterial);
-bush2.position.set(2.5, 0.2, 2.4);
-bush2.scale.setScalar(0.3);
-bush2.rotation.z = 0.97;
-house.add(bush2);
-const bush3 = new THREE.Mesh(bushGeometry, bushMaterial);
-bush3.position.set(-2.5, 0.2, 2.2);
-bush3.scale.setScalar(0.4);
-bush3.rotation.z = 1.598;
-house.add(bush3);
-const bush4 = new THREE.Mesh(bushGeometry, bushMaterial);
-bush4.position.set(-3.1, 0.2, 2.4);
-bush4.scale.setScalar(0.3);
-bush4.rotation.x = 2.68;
-bush4.rotation.z = 0.83;
-house.add(bush4);
-const bush5 = new THREE.Mesh(bushGeometry, bushMaterial);
-bush5.position.set(-2, 0.1, 2.3);
-bush5.scale.setScalar(0.25);
-bush5.rotation.x = -1;
-house.add(bush5);
-
 //Light
 const ambientLight = new THREE.AmbientLight('#86cdff', 0.275); // White light, full intensity
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // White light, full intensity
-directionalLight.position.set(3, 2, -8);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // White light, full intensity
+directionalLight.position.set(3, 2, -50);
+directionalLight.target.position.set(0, 0, 0);
+scene.add(directionalLight.target);
 scene.add(directionalLight);
-
-const doorLight = new THREE.PointLight('#ff7d46', 5);
-doorLight.position.set(0, 2.2, 2.5);
-house.add(doorLight);
 
 //Circling lights
 const clight1 = new THREE.PointLight('#8800ff', 6);
@@ -226,14 +126,14 @@ const camera = new THREE.PerspectiveCamera( 75, sizes.width / sizes.height, 0.1,
 scene.add( camera );
 
 //ShadowMapping
-directionalLight.shadow.mapSize.width = 256;
-directionalLight.shadow.mapSize.height = 256;
-directionalLight.shadow.camera.top = 8;
-directionalLight.shadow.camera.right = 8;
-directionalLight.shadow.camera.bottom = -8;
-directionalLight.shadow.camera.left = -8;
+directionalLight.shadow.mapSize.width = 1024;
+directionalLight.shadow.mapSize.height = 1024;
+directionalLight.shadow.camera.top = 35;
+directionalLight.shadow.camera.right = 35;
+directionalLight.shadow.camera.bottom = -35;
+directionalLight.shadow.camera.left = -35;
 directionalLight.shadow.camera.near = 1;
-directionalLight.shadow.camera.far = 20;
+directionalLight.shadow.camera.far = 80;
 
 //Fog
 scene.fog = new THREE.FogExp2('#02343f', 0.01);
@@ -251,8 +151,6 @@ const renderer = new THREE.WebGLRenderer({ canvas: canvas });
 renderer.setSize( sizes.width, sizes.height );
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-//camera.position.z = 10;
-
 //Resizing
 window.addEventListener('resize', () => {
     sizes.width = window.innerWidth;
@@ -266,10 +164,116 @@ window.addEventListener('resize', () => {
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 directionalLight.castShadow = true;
-walls.castShadow = true;
-walls.receiveShadow = true;
-roof.castShadow = true;
 floor.receiveShadow = true;
+
+const rotDeg = (x = 0, y = 0, z = 0) => ({ x, y, z });
+
+//Houses
+const houses = [
+    new House(scene, {
+        textureLoader,
+        position: new THREE.Vector3(0, 0, 0),
+        rotation: rotDeg(0, 0, 0)
+    }),
+    new House(scene, {
+        textureLoader,
+        position: new THREE.Vector3(20, 0, 10),
+        rotation: rotDeg(0, -60, 0)
+    }),
+    new House(scene, {
+        textureLoader,
+        position: new THREE.Vector3(-20, 0, 10),
+        rotation: rotDeg(0, 60, 0)
+    }),
+        new House(scene, {
+        textureLoader,
+        position: new THREE.Vector3(20, 0, -10),
+        rotation: rotDeg(0, -45, 0)
+    }),
+    new House(scene, {
+        textureLoader,
+        position: new THREE.Vector3(-20, 0, -10),
+        rotation: rotDeg(0, 45, 0)
+    })
+];
+
+houses.forEach((houseInstance) => {
+    houseInstance.setShadows(true);
+});
+
+houses[0].setButtonText("About Me");
+houses[0].setTextContent(`Hello! My name is Rupam Debnath. 
+    Welcome to my World!
+    
+
+    I'm a 3D enthusiast with experience in Game Programming using Unity, C# and C++. 
+    I was born and raised in India, currently living in Essen, Germany.
+    I have been playing games since Super Mario on the NES in the 90s, continuing till date with consoles, PC and Oculus Quest VR.
+    I have a strong passion for creating immersive 3D experiences and am currently exploring the capabilities of Three.js to bring my ideas to life.
+    Check out the other houses for more details and background about me.`);
+
+houses[1].setButtonText("Work Experience");
+houses[1].setTextContent(`- Lead Unity Developer at RealityArc Systems, Bangalore, India (Aug 2025 - Feb 2026)
+    - Unity XR Developer at CUSMAT Technologies, Bangalore, India (Dec 2022 - Jun 2024)
+    - IT Support Engineer at Xtreme Productivity, Melbourne, Australia (Mar 2019 - Aug 2021)
+    - Software Test Engineer at Infosys, Bangalore, India (Feb 2015 - Dec 2016)
+    - Software Test Engineer at Laresen and Toubro Infotech, Pune, India (Jul 2012 - Dec 2014)`);
+
+houses[2].setButtonText("Education");
+houses[2].setTextContent(`- Bachelor's degree in Mechanical Engineering from Anna University, India
+    - Master's degree in IT (Virtual and Augmented Reality specialization) from Deakin University, Melbourne, Australia
+    - Currently pursuing the core curriculum of Computer Science at 42Berlin, Berlin, Germany`);
+
+houses[3].setButtonText("Skills");
+houses[3].setTextContent(`- Proficient in C, C#, C++, and JavaScript
+- Experience with Unity for game development
+- Familiarity with 3D modeling and animation.
+- Git version control, including PlasticSCM for Unity`);
+
+houses[4].setButtonText("Contact");
+houses[4].setTextContent(`Email - rdebmail@gmail.com
+
+
+    LinkedIn - https://www.linkedin.com/in/devrupam
+
+
+    github - https://github.com/rupamdebnath`);
+
+if (houses[4].infoButton && houses[4].infoText) {
+    houses[4].infoButton.clickCallback = () => {
+        houses[4].infoText.open();
+        contactOverlay.classList.add('is-visible');
+    };
+}
+
+let hasDisposedScene = false;
+
+function disposeScene() {
+    if (hasDisposedScene) {
+        return;
+    }
+    hasDisposedScene = true;
+
+    renderer.setAnimationLoop(null);
+
+    houses.forEach((houseInstance) => {
+        houseInstance.dispose();
+    });
+    House.releaseSharedResources();
+
+    if (controlsHelper && controlsHelper.parentNode) {
+        controlsHelper.parentNode.removeChild(controlsHelper);
+    }
+
+    if (contactOverlay && contactOverlay.parentNode) {
+        contactOverlay.parentNode.removeChild(contactOverlay);
+    }
+
+    controls.dispose();
+    renderer.dispose();
+}
+
+window.addEventListener('beforeunload', disposeScene);
 
 //light rotation
 const radius = 5; 
@@ -278,24 +282,11 @@ const speed = 0.001;
 //Fox Model
 const player = new PlayerController(scene, camera, './models/Fox.glb', (model) => {
     model.scale.setScalar(0.01);
-    model.position.set(0, -0.1, 5);
+    model.position.set(0, -0.1, 6);
     model.rotation.y = Math.PI; 
 });
 
 const timer = new THREE.Timer()
-
-// Button
-const button = new ButtonHandler(
-    scene,
-    camera,
-    renderer,
-    new THREE.Vector3(0, 2, 2.05),
-    new THREE.Euler(0, 0, 0)
-);
-button.setText("Toggle Fog");
-button.clickCallback = () => {
-    console.log("My button clicked!");
-};
 
 function animate( time ) 
 {

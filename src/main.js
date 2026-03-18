@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import GUI from 'lil-gui';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Sky } from 'three/examples/jsm/Addons.js';
-import ModelHandler from './ModelHandler.js';
+import ButtonHandler from './ButtonHandler.js';
+import PlayerController from './PlayerController.js';
+import ThreeMeshUI from 'three-mesh-ui';
 
 const scene = new THREE.Scene();
 const gui = new GUI();
@@ -16,13 +18,6 @@ sky.material.uniforms['mieDirectionalG'].value = 0.95;
 sky.material.uniforms['sunPosition'].value.set(7, -0.4, -15);
 sky.scale.setScalar(100);
 scene.add(sky);
-
-//Fox Model
-const player = new ModelHandler(scene, './models/Fox.glb', (model) => {
-    model.scale.setScalar(0.01);
-    model.position.set(0, 0, 5);
-    model.rotation.y = Math.PI; 
-});
 
 //Canvas
 const canvas = document.querySelector('canvas.webgl');
@@ -202,44 +197,6 @@ bush5.scale.setScalar(0.25);
 bush5.rotation.x = -1;
 house.add(bush5);
 
-/*
-const graveColorTexture = textureLoader.load('./textures/graves/plastered_stone_wall_1k/plastered_stone_wall_diff_1k.jpg');
-const graveARMTexture = textureLoader.load('./textures/graves/plastered_stone_wall_1k/plastered_stone_wall_arm_1k.jpg');
-const graveNormalTexture = textureLoader.load('./textures/graves/plastered_stone_wall_1k/plastered_stone_wall_nor_gl_1k.jpg');
-graveColorTexture.colorSpace = THREE.SRGBColorSpace;
-
-//Graves
-const graveGeometry = new THREE.BoxGeometry(0.6, 0.8, 0.2);
-const graveMaterial = new THREE.MeshStandardMaterial({
-    color: 'gray',
-    map: graveColorTexture,
-    aoMap: graveARMTexture,
-    roughnessMap: graveARMTexture,
-    metalnessMap: graveARMTexture,
-    normalMap: graveNormalTexture
-});
-const graves = new THREE.Group();
-
-for(let i = 0; i < 40; i++)
-{
-    const angle = Math.random() * Math.PI * 2;
-    const radius = 5 + Math.random() * 4;
-    const x = Math.cos(angle) * radius;
-    const z = Math.sin(angle) * radius;
-
-    const grave = new THREE.Mesh(graveGeometry, graveMaterial);
-    grave.position.set(x, 0.1, z);
-    grave.rotation.set(
-        (Math.random() - 0.5) * 0.4, // Random rotation around X-axis
-        (Math.random() - 0.5) * 0.4, // Random rotation around Y-axis
-        (Math.random() - 0.5) * 0.4  // Random rotation around Z-axis
-    );
-    grave.scale.setScalar(0.4 + Math.random() * 0.5); // Random scale between 0.6 and 1
-    graves.add(grave);
-}
-scene.add(graves);
-*/
-
 //Light
 const ambientLight = new THREE.AmbientLight('#86cdff', 0.275); // White light, full intensity
 scene.add(ambientLight);
@@ -279,7 +236,7 @@ directionalLight.shadow.camera.near = 1;
 directionalLight.shadow.camera.far = 20;
 
 //Fog
-scene.fog = new THREE.FogExp2('#02343f', 0.08);
+scene.fog = new THREE.FogExp2('#02343f', 0.01);
 
 clight1.shadow.mapSize.width = 256;
 clight1.shadow.mapSize.height = 256;
@@ -294,7 +251,7 @@ const renderer = new THREE.WebGLRenderer({ canvas: canvas });
 renderer.setSize( sizes.width, sizes.height );
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-camera.position.z = 10;
+//camera.position.z = 10;
 
 //Resizing
 window.addEventListener('resize', () => {
@@ -313,17 +270,32 @@ walls.castShadow = true;
 walls.receiveShadow = true;
 roof.castShadow = true;
 floor.receiveShadow = true;
-/*
-for (const grave of graves.children) {
-    grave.castShadow = true;
-    grave.receiveShadow = true;
-}*/
 
 //light rotation
 const radius = 5; 
 const speed = 0.001; 
 
+//Fox Model
+const player = new PlayerController(scene, camera, './models/Fox.glb', (model) => {
+    model.scale.setScalar(0.01);
+    model.position.set(0, -0.1, 5);
+    model.rotation.y = Math.PI; 
+});
+
 const timer = new THREE.Timer()
+
+// Button
+const button = new ButtonHandler(
+    scene,
+    camera,
+    renderer,
+    new THREE.Vector3(0, 2, 2.05),
+    new THREE.Euler(0, 0, 0)
+);
+button.setText("Toggle Fog");
+button.clickCallback = () => {
+    console.log("My button clicked!");
+};
 
 function animate( time ) 
 {
@@ -337,6 +309,7 @@ function animate( time )
     clight1.position.x = Math.cos(angle) * radius;
     clight1.position.z = Math.sin(angle) * radius;
     clight1.position.y = 1 + Math.sin(angle * 2) * 0.5; // Vertical oscillation
+    ThreeMeshUI.update();
     renderer.render( scene, camera );
 }
 renderer.setAnimationLoop( animate );

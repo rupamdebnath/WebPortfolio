@@ -23,8 +23,6 @@ export default class ModelHandler {
             if (gltf.animations.length) {
                 this.mixer = new THREE.AnimationMixer(this.model);
                 const action = this.mixer.clipAction(gltf.animations[0]);
-                //action.loop = THREE.LoopRepeat;
-                //action.clampWhenFinished = false;
                 action.play();
             }
         });

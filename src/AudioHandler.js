@@ -29,7 +29,6 @@ export default class AudioHandler {
         const { loop = true, volume = 0.35, autoplay = true } = options;
         
         try {
-            // Ensure file path has extension
             const fullPath = musicPath.endsWith('.mp3') || musicPath.endsWith('.ogg') ? musicPath : `${musicPath}.mp3`;
             
             console.log('Loading background music from:', fullPath);
@@ -84,6 +83,41 @@ export default class AudioHandler {
         if (this.backgroundMusic && this.backgroundMusic.isPlaying) {
             this.backgroundMusic.stop();
         }
+    }
+
+    async playBackgroundMusic() {
+        if (!this.backgroundMusic) {
+            console.warn('Background music not loaded yet');
+            return false;
+        }
+
+        if (this.listener.context.state === 'suspended') {
+            await this.listener.context.resume();
+        }
+
+        if (!this.backgroundMusic.isPlaying) {
+            this.backgroundMusic.play();
+        }
+
+        return this.backgroundMusic.isPlaying;
+    }
+
+    async toggleBackgroundMusic() {
+        if (!this.backgroundMusic) {
+            console.warn('Background music not loaded yet');
+            return false;
+        }
+
+        if (this.backgroundMusic.isPlaying) {
+            this.backgroundMusic.stop();
+            return false;
+        }
+
+        return this.playBackgroundMusic();
+    }
+
+    isBackgroundMusicPlaying() {
+        return !!(this.backgroundMusic && this.backgroundMusic.isPlaying);
     }
 
     setVolume(volume) {

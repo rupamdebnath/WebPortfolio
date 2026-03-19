@@ -3,15 +3,26 @@ import ThreeMeshUI from 'three-mesh-ui';
 import ButtonHandler from './ButtonHandler';
 
 export default class TextHandler {
-    constructor(scene, camera, renderer, position = new THREE.Vector3(0, 0, 0), rotation) {
+    constructor(scene, camera, renderer, position = new THREE.Vector3(0, 0, 0), rotation = { x: 0, y: 0, z: 0 }) {
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
         this.position = position;
+        const rotationDeg = rotation && rotation.isEuler
+            ? {
+                x: THREE.MathUtils.radToDeg(rotation.x),
+                y: THREE.MathUtils.radToDeg(rotation.y),
+                z: THREE.MathUtils.radToDeg(rotation.z)
+            }
+            : {
+                x: rotation.x || 0,
+                y: rotation.y || 0,
+                z: rotation.z || 0
+            };
         this.rotation = new THREE.Euler(
-            THREE.MathUtils.degToRad(rotation.x),
-            THREE.MathUtils.degToRad(rotation.y),
-            THREE.MathUtils.degToRad(rotation.z)
+            THREE.MathUtils.degToRad(rotationDeg.x),
+            THREE.MathUtils.degToRad(rotationDeg.y),
+            THREE.MathUtils.degToRad(rotationDeg.z)
         );
         this.button = new ButtonHandler(
             scene,
@@ -77,7 +88,20 @@ export default class TextHandler {
         this.container.visible = false;
     }
 
+    setSize(width, height) {
+        this.container.set({ width, height });
+        this.textBlock.set({ width, height });
+    }
+
     setText(content) {
         this.text.set({ content });
+    }
+
+    setButtonInvisible(visible) {
+        this.button.button.visible = visible;
+    }
+
+    setFontSize(size) {
+        this.text.set({ fontSize: size });
     }
 }

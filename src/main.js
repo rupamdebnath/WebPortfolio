@@ -1,13 +1,19 @@
+/*
+Copyright [2026] [Rupam Debnath]
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+*/
+
 import * as THREE from 'three';
 //import GUI from 'lil-gui';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Sky } from 'three/examples/jsm/Addons.js';
-import ButtonHandler from './ButtonHandler.js';
+import { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
 import PlayerController from './PlayerController.js';
 import House from './House.js';
 import ThreeMeshUI from 'three-mesh-ui';
-import TextHandler from './TextHandler.js';
 import AudioHandler from './AudioHandler.js';
+import VideoHandler from './VideoHandler.js';
 
 const scene = new THREE.Scene();
 //const gui = new GUI();
@@ -25,17 +31,38 @@ scene.add(sky);
 //Canvas
 const canvas = document.querySelector('canvas.webgl');
 
-//Screen-space controls helper (always visible)
+//Screen-space controls helper
 const controlsHelper = document.createElement('div');
 controlsHelper.className = 'controls-helper';
 controlsHelper.innerHTML = `
     <h3>Controls</h3>
-    <p>Best run on a PC. No Controls for Phone yet.</p>
     <p>Use W, A, S, D to control the fox.</p>
+    <p>Use the joystick in case of phone browser.</p>
     <p>Hold Shift to sprint.</p>
     <p>Click the blue buttons with the mouse to interact.</p>
+    <button class="controls-music-toggle" id="music-toggle-btn" type="button">Music: ON</button>
 `;
 document.body.appendChild(controlsHelper);
+
+//For mobile controls joystick and run
+const mobileControls = document.createElement('div');
+mobileControls.className = 'mobile-controls';
+mobileControls.innerHTML = `
+    <div class="mobile-joystick" id="mobile-joystick" aria-label="Movement joystick">
+        <div class="mobile-joystick-knob" id="mobile-joystick-knob"></div>
+    </div>
+    <button class="mobile-btn mobile-btn-run" type="button" id="mobile-run-btn">Run</button>
+`;
+document.body.appendChild(mobileControls);
+
+const isTouchDevice =
+    ('ontouchstart' in window) ||
+    (navigator.maxTouchPoints > 0) ||
+    window.matchMedia('(pointer: coarse)').matches;
+
+if (isTouchDevice) {
+    mobileControls.classList.add('is-visible');
+}
 
 const contactOverlay = document.createElement('div');
 contactOverlay.className = 'contact-overlay';
@@ -153,10 +180,188 @@ const renderer = new THREE.WebGLRenderer({ canvas: canvas });
 renderer.setSize( sizes.width, sizes.height );
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 
+//CSS3D Renderer for videos
+const css3dRenderer = new CSS3DRenderer();
+css3dRenderer.setSize(window.innerWidth, window.innerHeight);
+css3dRenderer.domElement.className = 'css3d-layer';
+document.body.appendChild(css3dRenderer.domElement);
+
 //Audio Handler
 const audioHandler = new AudioHandler(scene, camera, './audio/nightsound');
 audioHandler.loadBackgroundMusic('./audio/nightsound');
 audioHandler.loadDoorSound('./audio/door');
+
+const musicToggleButton = document.getElementById('music-toggle-btn');
+
+if (musicToggleButton) {
+    const updateMusicButtonLabel = () => {
+        musicToggleButton.textContent = audioHandler.isBackgroundMusicPlaying() ? 'Music: ON' : 'Music: OFF';
+    };
+
+    musicToggleButton.addEventListener('click', async () => {
+        await audioHandler.toggleBackgroundMusic();
+        updateMusicButtonLabel();
+    });
+
+    // Sync label after load/autoplay resolves.
+    setTimeout(updateMusicButtonLabel, 400);
+}
+
+//*
+//Videos
+//
+const videoHandler1 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler1.addYouTubeScreen({
+    videoId: 'OkSgA-h6T_g',
+    position: new THREE.Vector3(-5, 1, 0),
+    rotation: { x: 0, y: 0, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler1.addText(renderer, `- This is a VR experience simulating Excavator
+    - Custom hardware using Arduino Inputs
+    - Data Analytics using JSON files and python scripts
+    - NWH Vehicle Physics plugin for Unity
+    - Meta Quest 2 integration`);
+
+const videoHandler2 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler2.addYouTubeScreen({
+    videoId: 'z5sBe9x4MQ4',
+    position: new THREE.Vector3(5, 1, 0),
+    rotation: { x: 0, y: 0, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler2.addText(renderer, `- A VR experience on Meta Quest 2
+    - APK build as required by Quest Store submission
+    - World Canvas UI for VR interactions
+    - Firebase backend for user analytics`);
+
+const videoHandler3 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler3.addYouTubeScreen({
+    videoId: 'kt3lBWyDWr4',
+    position: new THREE.Vector3(-20, 1, 0),
+    rotation: { x: 0, y: 60, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler3.addText(renderer, `- A VR experience on Meta Quest 2
+    - Windows build with wired Quest Link and Air Link support
+    - Thrustmaster hardware for gears, steering wheel and pedals
+    - Vehicle Navigation system using waypoints and minimap RenderTexture
+    - State system for instructions in order and triggering events`);
+
+const videoHandler4 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler4.addYouTubeScreen({
+    videoId: 'XO_xTD_JfwI',
+    position: new THREE.Vector3(20, 1, 0),
+    rotation: { x: 0, y: -60, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler4.addText(renderer, `- Accurate Physics simulation of a crane system
+    - Rigidbodies and Joints Used for realistic movement
+    - Custom hardware using Arduino Inputs
+    - Accuracy to real world physics was a key requirement`);
+
+const videoHandler5 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler5.addYouTubeScreen({
+    videoId: 'lzS9ngEzByA',
+    position: new THREE.Vector3(10, 1, -4),
+    rotation: { x: 0, y: -30, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler5.addText(renderer, `- Realistic liquid simulation
+    - Zebra Liquid plugin for Unity used for accurate fluid dynamics
+    - Liquid should simulate read world molten metal pouring and filling of containers`);
+
+const videoHandler6 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler6.addYouTubeScreen({
+    videoId: 'CxssugdHCzc',
+    position: new THREE.Vector3(-10, 1, -4),
+    rotation: { x: 0, y: 30, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler6.addText(renderer, `- A VR experience on Meta Quest 2
+    - Realistic Screwdriver mechanics
+    - Oculus SDK for hand tracking, grabbing and interactions
+    - Object Snap mechanics`);
+
+const videoHandler7 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler7.addYouTubeScreen({
+    videoId: 'SNjSbJAKCgk',
+    position: new THREE.Vector3(-15, 1, 5),
+    rotation: { x: 0, y: 60, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler7.addText(renderer, `- Wire Rope mechanics in VR
+    - Obi Rope plugin for Unity used for realistic rope physics
+    - Joints and Colliders for interactions with the rope
+    - Real World Crane system simulation with accurate physics`);
+
+const videoHandler8 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler8.addYouTubeScreen({
+    videoId: 'RFiL0bO9kkg',
+    position: new THREE.Vector3(15, 1, 5),
+    rotation: { x: 0, y: -60, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler8.addText(renderer, `- Perfect example of different joints in Unity
+    - Realistic Crane Grabber mechanics
+    - Similar to how a claw machine works in real life to grab toys
+    - It was quite a challenging project to get the physics and interactions right`);
+
+const videoHandler9 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler9.addYouTubeScreen({
+    videoId: 'hL3WFsaw8Hg',
+    position: new THREE.Vector3(10, 1, 15),
+    rotation: { x: 0, y: -15, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler9.addText(renderer, `- PC simulation of Dynapac Roller
+    - A lot of custom Hardware was used
+    - One Input changes multiple parameters of the machine
+    - Hence, an Observer Architectural Pattern was used`);
+
+const videoHandler10 = new VideoHandler(scene, camera, { renderer: css3dRenderer });
+videoHandler10.addYouTubeScreen({
+    videoId: '38lvDAo2Gkc',
+    position: new THREE.Vector3(-10, 1, 15),
+    rotation: { x: 0, y: 15, z: 0 },
+    width: 1280,
+    height: 720,
+    worldScale: 0.0025,
+    mute: 1
+});
+videoHandler10.addText(renderer, `- My very first 3D game in Unity
+    - Although not the best in terms of graphics and gameplay, it was a great learning experience
+    - Hence, I keep it close to my heart and wanted to share it here as well
+    - It was made for Android phones with touch controls, hence the simple mechanics and graphics
+    - State machine, basic Nav AI, Scriptable Objects were key features`);
+
 
 //Resizing
 window.addEventListener('resize', () => {
@@ -165,6 +370,7 @@ window.addEventListener('resize', () => {
     camera.aspect = sizes.width / sizes.height;
     camera.updateProjectionMatrix();
     renderer.setSize(sizes.width, sizes.height);
+    css3dRenderer.setSize(sizes.width, sizes.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 //shadows
@@ -282,8 +488,13 @@ function disposeScene() {
         contactOverlay.parentNode.removeChild(contactOverlay);
     }
 
+    if (mobileControls && mobileControls.parentNode) {
+        mobileControls.parentNode.removeChild(mobileControls);
+    }
+
     controls.dispose();
     audioHandler.dispose();
+    videoHandler.dispose();
     renderer.dispose();
 }
 
@@ -296,10 +507,93 @@ const speed = 0.001;
 //Fox Model
 const player = new PlayerController(scene, camera, './models/Fox.glb', (model) => {
     model.scale.setScalar(0.01);
-    model.position.set(0, -0.1, 6);
+    model.position.set(0, -0.1, 15);
     model.rotation.y = Math.PI; 
 });
 
+const joystickBase = document.getElementById('mobile-joystick');
+const joystickKnob = document.getElementById('mobile-joystick-knob');
+const mobileRunButton = document.getElementById('mobile-run-btn');
+
+let joystickPointerId = null;
+
+const resetJoystick = () => {
+    player.setAnalogInput(0, 0);
+    if (joystickKnob) {
+        joystickKnob.style.transform = 'translate(-50%, -50%)';
+    }
+    joystickPointerId = null;
+};
+
+const updateJoystick = (event) => {
+    if (!joystickBase || !joystickKnob) {
+        return;
+    }
+
+    const rect = joystickBase.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const maxRadius = rect.width * 0.35;
+
+    let dx = event.clientX - centerX;
+    let dy = event.clientY - centerY;
+    const distance = Math.hypot(dx, dy);
+
+    if (distance > maxRadius) {
+        const scale = maxRadius / distance;
+        dx *= scale;
+        dy *= scale;
+    }
+
+    const normalizedX = dx / maxRadius;
+    const normalizedY = -dy / maxRadius;
+
+    player.setAnalogInput(normalizedX, normalizedY);
+    joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+};
+
+if (joystickBase) {
+    joystickBase.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        joystickPointerId = event.pointerId;
+        joystickBase.setPointerCapture(event.pointerId);
+        updateJoystick(event);
+    });
+
+    joystickBase.addEventListener('pointermove', (event) => {
+        if (event.pointerId !== joystickPointerId) {
+            return;
+        }
+        event.preventDefault();
+        updateJoystick(event);
+    });
+
+    const endJoystick = (event) => {
+        if (event.pointerId !== joystickPointerId) {
+            return;
+        }
+        event.preventDefault();
+        resetJoystick();
+    };
+
+    joystickBase.addEventListener('pointerup', endJoystick);
+    joystickBase.addEventListener('pointercancel', endJoystick);
+    joystickBase.addEventListener('pointerleave', endJoystick);
+}
+
+if (mobileRunButton) {
+    const setRunPressed = (pressed, event) => {
+        event.preventDefault();
+        player.setAnalogRun(pressed);
+    };
+
+    mobileRunButton.addEventListener('pointerdown', (event) => setRunPressed(true, event));
+    mobileRunButton.addEventListener('pointerup', (event) => setRunPressed(false, event));
+    mobileRunButton.addEventListener('pointercancel', (event) => setRunPressed(false, event));
+    mobileRunButton.addEventListener('pointerleave', (event) => setRunPressed(false, event));
+}
+
+//Timer
 const timer = new THREE.Timer()
 
 function animate( time ) 
@@ -316,5 +610,6 @@ function animate( time )
     clight1.position.y = 1 + Math.sin(angle * 2) * 0.5; // Vertical oscillation
     ThreeMeshUI.update();
     renderer.render( scene, camera );
+    css3dRenderer.render( scene, camera );
 }
 renderer.setAnimationLoop( animate );

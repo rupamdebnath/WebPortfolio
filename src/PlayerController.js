@@ -17,6 +17,8 @@ export default class PlayerController {
         
         // Input state
         this.keys = { w: false, a: false, s: false, d: false, shift: false };
+        this.analogInput = { x: 0, y: 0 };
+        this.analogRun = false;
         
         // Bind events
         window.addEventListener('keydown', (e) => this.keys[e.key.toLowerCase()] = true);
@@ -24,6 +26,15 @@ export default class PlayerController {
 
         this.onLoaded = onLoaded;
         this.load(path);
+    }
+
+    setAnalogInput(x, y) {
+        this.analogInput.x = THREE.MathUtils.clamp(x, -1, 1);
+        this.analogInput.y = THREE.MathUtils.clamp(y, -1, 1);
+    }
+
+    setAnalogRun(isPressed) {
+        this.analogRun = !!isPressed;
     }
 
     load(path) {
@@ -56,16 +67,28 @@ export default class PlayerController {
     update(deltaTime) {
         if (!this.model) return;
 
-        const isRunRequested = this.keys.shift && !!this.runAction;
+        const isRunRequested = (this.keys.shift || this.analogRun) && !!this.runAction;
         const moveSpeed = (isRunRequested ? 5 : 2) * deltaTime;
         const rotateSpeed = 3 * deltaTime;
         let isMoving = false;
 
+        const keyboardForward = (this.keys.w ? 1 : 0) - (this.keys.s ? 1 : 0);
+        const keyboardTurn = (this.keys.a ? 1 : 0) - (this.keys.d ? 1 : 0);
+
+        const forwardInput = THREE.MathUtils.clamp(keyboardForward + this.analogInput.y, -1, 1);
+        const turnInput = THREE.MathUtils.clamp(keyboardTurn - this.analogInput.x, -1, 1);
+        const deadZone = 0.08;
+
         // 1. Handle Movement & Rotation
-        if (this.keys.w) { this.model.translateZ(moveSpeed); isMoving = true; }
-        if (this.keys.s) { this.model.translateZ(-moveSpeed); isMoving = true; }
-        if (this.keys.a) { this.model.rotation.y += rotateSpeed; isMoving = true; }
-        if (this.keys.d) { this.model.rotation.y -= rotateSpeed; isMoving = true; }
+        if (Math.abs(forwardInput) > deadZone) {
+            this.model.translateZ(moveSpeed * forwardInput);
+            isMoving = true;
+        }
+
+        if (Math.abs(turnInput) > deadZone) {
+            this.model.rotation.y += rotateSpeed * turnInput;
+            isMoving = true;
+        }
 
         // 2. Control Walk Animation
         if (this.mixer) {

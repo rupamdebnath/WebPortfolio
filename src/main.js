@@ -356,9 +356,8 @@ videoHandler10.addYouTubeScreen({
     worldScale: 0.0025,
     mute: 1
 });
-videoHandler10.addText(renderer, `- My very first 3D game in Unity
+videoHandler10.addText(renderer, `- My very first 3D game in Unity, hence close to my heart
     - Although not the best in terms of graphics and gameplay, it was a great learning experience
-    - Hence, I keep it close to my heart and wanted to share it here as well
     - It was made for Android phones with touch controls, hence the simple mechanics and graphics
     - State machine, basic Nav AI, Scriptable Objects were key features`);
 

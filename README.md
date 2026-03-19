@@ -42,5 +42,6 @@ On mobile, the touch control joystick can be used to control the movements of th
 - [MrDoob](https://github.com/mrdoob) - of course, the creator of three.js
 - [Three.js Examples](https://github.com/mrdoob/three.js/blob/master/examples)
 - [Polyhaven](https://polyhaven.com) - for texures, it's a great free site
+- [Pixabay](https://pixabay.com) - for audio assets, another cool site
 
 ---

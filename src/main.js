@@ -5,7 +5,6 @@ you may not use this file except in compliance with the License.
 */
 
 import * as THREE from 'three';
-//import GUI from 'lil-gui';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { Sky } from 'three/examples/jsm/Addons.js';
 import { CSS3DRenderer } from 'three/addons/renderers/CSS3DRenderer.js';
@@ -14,17 +13,17 @@ import House from './House.js';
 import ThreeMeshUI from 'three-mesh-ui';
 import AudioHandler from './AudioHandler.js';
 import VideoHandler from './VideoHandler.js';
+import PropsPlacement from './PropsPlacement.js';
 
 const scene = new THREE.Scene();
-//const gui = new GUI();
 
 //Sky
 const sky = new Sky();
-sky.material.uniforms['turbidity'].value = 10;
+sky.material.uniforms['turbidity'].value = 4;
 sky.material.uniforms['rayleigh'].value = 3;
-sky.material.uniforms['mieCoefficient'].value = 0.1;
-sky.material.uniforms['mieDirectionalG'].value = 0.95;
-sky.material.uniforms['sunPosition'].value.set(7, -0.4, -15);
+sky.material.uniforms['mieCoefficient'].value = 0.002;
+sky.material.uniforms['mieDirectionalG'].value = 0.99;
+sky.material.uniforms['sunPosition'].value.set(-110, 10, 0);
 sky.scale.setScalar(100);
 scene.add(sky);
 
@@ -87,25 +86,33 @@ if (closeContactOverlayButton) {
 //Texture Loader
 const textureLoader = new THREE.TextureLoader();
 const floorAlphaTexture = textureLoader.load('./textures/floor/alpha.jpg');
-const floorColorTexture = textureLoader.load('./textures/floor/coast_sand_rocks_02_1k/coast_sand_rocks_02_diff_1k.jpg');
-const floorARMTexture = textureLoader.load('./textures/floor/coast_sand_rocks_02_1k/coast_sand_rocks_02_arm_1k.jpg');
-const floorNormalTexture = textureLoader.load('./textures/floor/coast_sand_rocks_02_1k/coast_sand_rocks_02_nor_gl_1k.jpg');
-const floorDisplacementTexture = textureLoader.load('./textures/floor/coast_sand_rocks_02_1k/coast_sand_rocks_02_disp_1k.jpg');
+const floorColorTexture = textureLoader.load('./textures/ground/Grass_Patchy/Grass_Patchy_color.jpg');
+const floorAOTexture = textureLoader.load('./textures/ground/Grass_Patchy/Grass_Patchy_AO.jpg');
+const floorRoughnessTexture = textureLoader.load('./textures/ground/Grass_Patchy/Grass_Patchy_Roughness.jpg');
+const floorMetalnessTexture = textureLoader.load('./textures/ground/Grass_Patchy/Grass_Patchy_Metallic.jpg');
+const floorNormalTexture = textureLoader.load('./textures/ground/Grass_Patchy/Grass_Patchy_Normal.png');
+const floorDisplacementTexture = textureLoader.load('./textures/ground/Grass_Patchy/Grass_Patchy_Displacement.jpg');
 
 floorColorTexture.colorSpace = THREE.SRGBColorSpace;
 
 floorColorTexture.repeat.set(8, 8);
-floorARMTexture.repeat.set(8, 8);
+floorAOTexture.repeat.set(8, 8);
+floorRoughnessTexture.repeat.set(8, 8);
+floorMetalnessTexture.repeat.set(8, 8);
 floorNormalTexture.repeat.set(8, 8);
 floorDisplacementTexture.repeat.set(8, 8);
 
 floorColorTexture.wrapS = THREE.RepeatWrapping;
-floorARMTexture.wrapS = THREE.RepeatWrapping;
+floorAOTexture.wrapS = THREE.RepeatWrapping;
+floorRoughnessTexture.wrapS = THREE.RepeatWrapping;
+floorMetalnessTexture.wrapS = THREE.RepeatWrapping;
 floorNormalTexture.wrapS = THREE.RepeatWrapping;
 floorDisplacementTexture.wrapS = THREE.RepeatWrapping;
 
 floorColorTexture.wrapT = THREE.RepeatWrapping;
-floorARMTexture.wrapT = THREE.RepeatWrapping;
+floorAOTexture.wrapT = THREE.RepeatWrapping;
+floorRoughnessTexture.wrapT = THREE.RepeatWrapping;
+floorMetalnessTexture.wrapT = THREE.RepeatWrapping;
 floorNormalTexture.wrapT = THREE.RepeatWrapping;
 floorDisplacementTexture.wrapT = THREE.RepeatWrapping;
 
@@ -116,25 +123,29 @@ const floor = new THREE.Mesh(
         alphaMap: floorAlphaTexture,
         transparent: true,
         map: floorColorTexture,
-        aoMap: floorARMTexture,
-        roughnessMap: floorARMTexture,
-        metalnessMap: floorARMTexture,
+        aoMap: floorAOTexture,
+        roughnessMap: floorRoughnessTexture,
+        metalnessMap: floorMetalnessTexture,
         normalMap: floorNormalTexture,
         displacementMap: floorDisplacementTexture,
         displacementScale: 0.3,
         displacementBias: -0.2
     })
 );
+
 scene.add(floor);
 floor.rotation.x = - Math.PI * 0.5; 
+
+//PropsPlacement
+new PropsPlacement(scene);
 
 //Light
 const ambientLight = new THREE.AmbientLight('#86cdff', 0.275); // White light, full intensity
 scene.add(ambientLight);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 2); // White light, full intensity
-directionalLight.position.set(3, 2, -50);
-directionalLight.target.position.set(0, 0, 0);
+const directionalLight = new THREE.DirectionalLight('white', 2); // White light, full intensity
+directionalLight.position.set(-50, 50, 20);
+directionalLight.target.position.set(100, 0, 0);
 scene.add(directionalLight.target);
 scene.add(directionalLight);
 
